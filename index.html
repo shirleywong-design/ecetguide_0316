@@ -3,533 +3,596 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ECET App – Tutorial Preview</title>
+  <title>Ask ECET</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
+    html, body {
+      width: 100%; height: 100%;
       font-family: 'Nunito', sans-serif;
-      background: #f0ece5;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px 16px 40px;
-    }
-
-    .logo {
-      font-size: 13px;
-      font-weight: 800;
-      color: #5a7a62;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      font-size: 15px;
-      font-weight: 700;
-      color: #6b5a4e;
-      margin-bottom: 18px;
-      text-align: center;
-    }
-
-    /* ── Language bar ── */
-    .lang-bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; }
-    .lbtn { padding: 5px 18px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid #ddd; color: #a09080; background: #fff; font-family: 'Nunito', sans-serif; transition: all .2s; }
-    .lbtn.on { background: #5a7a62; color: #fff; border-color: #5a7a62; }
-
-    /* ── Page tabs ── */
-    .page-tabs { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; }
-    .ptab { padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid #ddd; color: #a09080; background: #fff; font-family: 'Nunito', sans-serif; transition: all .2s; }
-    .ptab.on { background: #5a7a62; color: #fff; border-color: #5a7a62; }
-
-    /* ── Phone shell ── */
-    .phone {
-      width: 300px;
-      border-radius: 36px;
-      border: 2.5px solid #d8d0c6;
-      overflow: hidden;
-      position: relative;
       background: #faf7f2;
-      min-height: 570px;
-      box-shadow: 0 12px 40px rgba(80,60,40,.13);
+      overflow: hidden;
     }
 
-    .screen { padding: 18px 14px 74px; }
-    .page { display: none; }
-    .page.on { display: block; }
+    /* â”€â”€ The real app in an iframe â”€â”€ */
+    #app-frame {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      z-index: 1;
+    }
 
-    /* ── Top bar ── */
-    .topbar { display: flex; align-items: center; gap: 9px; margin-bottom: 13px; }
-    .avsm { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 1.5px solid #ddd; }
-    .avsm img { width: 100%; height: 100%; object-fit: cover; }
-    .gr h2 { font-size: 13.5px; font-weight: 800; color: #3d2f22; }
-    .gr p { font-size: 10px; color: #a09080; }
-    .lo { margin-left: auto; color: #ccc; font-size: 16px; }
+    /* â”€â”€ Overlay dim layer â”€â”€ */
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(30, 20, 10, 0.52);
+      z-index: 10;
+      display: none;
+    }
 
-    /* ── Journey card ── */
-    .jcard { background: #fff; border-radius: 14px; padding: 12px; margin-bottom: 14px; border: 0.5px solid #ede8e2; }
-    .jcard h3 { font-size: 12px; font-weight: 800; color: #3d2f22; }
-    .jcard p { font-size: 9.5px; color: #a09080; margin-bottom: 7px; }
-    .pbar { height: 5px; background: #ede8e2; border-radius: 3px; margin-bottom: 10px; overflow: hidden; }
-    .pfill { height: 100%; width: 75%; background: #7dab8a; border-radius: 3px; }
-    .stats { display: flex; }
-    .stat { flex: 1; text-align: center; }
-    .sico { width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 3px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
-    .sg { background: #eaf4ed; } .sr { background: #fceef3; } .sa { background: #fef9ee; }
-    .snum { font-size: 14px; font-weight: 800; }
-    .ng { color: #5a9470; } .nr { color: #c97090; } .na { color: #c4881a; }
-    .slbl { font-size: 8.5px; color: #b0a090; line-height: 1.3; }
+    /* â”€â”€ Spotlight cutout â”€â”€ */
+    #spotlight {
+      position: fixed;
+      z-index: 11;
+      border: 2.5px solid #d4a96a;
+      border-radius: 14px;
+      pointer-events: none;
+      box-shadow: 0 0 0 9999px rgba(30,20,10,0.52);
+      transition: all .4s ease;
+      display: none;
+    }
 
-    /* ── Trending ── */
-    .stitle { font-size: 13px; font-weight: 800; color: #3d2f22; margin-bottom: 8px; }
-    .trow { display: flex; gap: 9px; overflow: hidden; margin-bottom: 14px; }
-    .ti { flex-shrink: 0; text-align: center; width: 58px; }
-    .tring { width: 52px; height: 52px; border-radius: 50%; padding: 2.5px; margin: 0 auto 3px; }
-    .tring.u { background: conic-gradient(#f9a26a, #e85d7a, #b26fd8, #6fb3f0, #f9a26a); }
-    .tring.s { background: #ccc9c4; }
-    .tinner { width: 100%; height: 100%; border-radius: 50%; background: #fdf9f5; overflow: hidden; }
-    .tinner img { width: 47px; height: 47px; border-radius: 50%; object-fit: cover; object-position: top; }
-    .tlbl { font-size: 8.5px; color: #7a6a5e; line-height: 1.3; }
-
-    /* ── What cards ── */
-    .wcard { background: #fff; border-radius: 11px; padding: 10px 12px; display: flex; align-items: center; gap: 9px; margin-bottom: 7px; border: 0.5px solid #ede8e2; }
-    .wico { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
-    .wg { background: #eaf4ed; } .wr { background: #fceef3; } .wa { background: #fef9ee; }
-    .wt { font-size: 11px; font-weight: 700; color: #3d2f22; }
-    .wd { font-size: 9.5px; color: #a09080; line-height: 1.4; }
-
-    /* ── Community page ── */
-    .comm-page { padding: 18px 14px 74px; }
-    .comm-header h2 { font-size: 17px; font-weight: 800; color: #3d2f22; margin-bottom: 2px; }
-    .comm-header p { font-size: 10px; color: #a09080; margin-bottom: 11px; }
-    .tag-row { display: flex; gap: 6px; margin-bottom: 11px; overflow: hidden; }
-    .tag { padding: 4px 11px; border-radius: 20px; font-size: 9.5px; font-weight: 700; background: #fff; border: 0.5px solid #ddd; color: #a09080; }
-    .tag.on { background: #4a6a52; color: #fff; border-color: #4a6a52; }
-    .post-card { background: #fff; border-radius: 13px; padding: 12px; border: 0.5px solid #ede8e2; }
-    .post-top { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
-    .post-av { width: 34px; height: 34px; border-radius: 50%; background: #e8ddd4; overflow: hidden; }
-    .post-av img { width: 100%; height: 100%; object-fit: cover; }
-    .post-name { font-size: 11.5px; font-weight: 700; color: #3d2f22; }
-    .post-time { font-size: 9px; color: #b0a090; }
-    .post-tags { display: flex; gap: 5px; margin-bottom: 7px; }
-    .ptag { padding: 2px 9px; border-radius: 12px; font-size: 9px; background: #f0ebe4; color: #7a6a5e; }
-    .post-title { font-size: 12px; font-weight: 700; color: #3d2f22; margin-bottom: 4px; }
-    .post-body { font-size: 10px; color: #8a7a6e; line-height: 1.55; }
-    .post-actions { display: flex; align-items: center; gap: 9px; margin-top: 10px; padding-top: 9px; border-top: 0.5px solid #ede8e2; }
-    .pact { display: flex; align-items: center; gap: 2px; font-size: 9.5px; color: #b0a090; }
-    .pact-save { margin-left: auto; font-size: 12px; color: #b0a090; }
-
-    /* ── Bottom nav ── */
-    .bnav { position: absolute; bottom: 0; left: 0; right: 0; height: 70px; background: #fff; border-top: 0.5px solid #ede8e2; display: flex; align-items: flex-start; padding-top: 10px; }
-    .ni { flex: 1; text-align: center; font-size: 8.5px; color: #b0a090; font-family: 'Nunito', sans-serif; }
-    .ni.on { color: #5a7a62; font-weight: 700; }
-    .nico { font-size: 18px; margin-bottom: 1px; }
-
-    /* ── Spotlight ── */
-    .spbox { position: absolute; z-index: 11; border: 2.5px solid #d4a96a; border-radius: 13px; pointer-events: none; box-shadow: 0 0 0 2000px rgba(35,25,15,0.46); transition: all .38s ease; }
-
-    /* ── Tooltip ── */
-    .tt {
-      position: absolute; z-index: 20;
-      background: rgba(255,253,249,0.94);
+    /* â”€â”€ Tooltip â”€â”€ */
+    #tooltip {
+      position: fixed;
+      z-index: 20;
+      background: rgba(255, 253, 249, 0.96);
       border: 1px solid #e8ddd0;
-      border-radius: 17px;
-      padding: 13px 14px 11px;
-      width: 228px;
+      border-radius: 18px;
+      padding: 16px 18px 14px;
+      width: 280px;
       font-family: 'Nunito', sans-serif;
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      transition: top .3s ease, bottom .3s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      display: none;
+      transition: top .3s ease, bottom .3s ease, left .3s ease;
     }
-    .tt-tag { font-size: 9px; font-weight: 800; color: #a8967e; letter-spacing: .6px; text-transform: uppercase; margin-bottom: 4px; }
-    .tt-title { font-size: 13.5px; font-weight: 800; color: #3d2f22; margin-bottom: 4px; line-height: 1.3; }
-    .tt-body { font-size: 11.5px; color: #6b5a4e; line-height: 1.65; margin-bottom: 10px; }
+    .tt-tag {
+      font-size: 10px; font-weight: 800; color: #a8967e;
+      letter-spacing: .6px; text-transform: uppercase; margin-bottom: 5px;
+    }
+    .tt-title {
+      font-size: 15px; font-weight: 800; color: #3d2f22;
+      margin-bottom: 5px; line-height: 1.3;
+    }
+    .tt-body {
+      font-size: 12.5px; color: #6b5a4e; line-height: 1.65; margin-bottom: 12px;
+    }
     .tt-body b { color: #3d2f22; font-weight: 700; }
-    .tt-btns { display: flex; align-items: center; gap: 7px; }
-    .ttdots { display: flex; gap: 3px; flex: 1; }
-    .tdot { width: 5px; height: 5px; border-radius: 50%; background: #ddd7cf; transition: all .22s; }
-    .tdot.on { background: #7dab8a; width: 14px; border-radius: 3px; }
-    .btn-n { background: #5a7a62; color: #fff; border: none; border-radius: 15px; padding: 6px 14px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; white-space: nowrap; }
-    .btn-n:hover { background: #4a6a52; }
-    .btn-s { font-size: 10.5px; color: #b0a090; background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif; }
+    .tt-btns {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .tt-dots { display: flex; gap: 4px; flex: 1; }
+    .tdot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #ddd7cf; transition: all .22s;
+    }
+    .tdot.on { background: #7dab8a; width: 15px; border-radius: 3px; }
+    .btn-next {
+      background: #5a7a62; color: #fff; border: none;
+      border-radius: 16px; padding: 7px 16px;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      font-family: 'Nunito', sans-serif; white-space: nowrap;
+    }
+    .btn-next:hover { background: #4a6a52; }
+    .btn-skip {
+      font-size: 11px; color: #b0a090; background: none;
+      border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
+    }
 
-    /* Tooltip arrows */
-    .arr-u { position: absolute; top: -8px; left: 22px; width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 8px solid #e8ddd0; }
-    .arr-u::after { content: ''; position: absolute; top: 2px; left: -6px; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 7px solid rgba(255,253,249,0.94); }
-    .arr-d { position: absolute; bottom: -8px; left: 22px; width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 8px solid #e8ddd0; }
-    .arr-d::after { content: ''; position: absolute; bottom: 2px; left: -6px; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 7px solid rgba(255,253,249,0.94); }
+    /* Arrows */
+    .arr-up {
+      position: absolute; top: -9px; left: 24px;
+      width: 0; height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 9px solid #e8ddd0;
+    }
+    .arr-up::after {
+      content: ''; position: absolute; top: 2px; left: -7px;
+      width: 0; height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-bottom: 8px solid rgba(255,253,249,0.96);
+    }
+    .arr-down {
+      position: absolute; bottom: -9px; left: 24px;
+      width: 0; height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 9px solid #e8ddd0;
+    }
+    .arr-down::after {
+      content: ''; position: absolute; bottom: 2px; left: -7px;
+      width: 0; height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 8px solid rgba(255,253,249,0.96);
+    }
 
     /* Avatar trio */
     .av3 { display: flex; justify-content: space-around; margin: 8px 0 4px; }
     .avc { text-align: center; }
-    .avring { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 1.5px solid #e8ddd0; margin: 0 auto 3px; }
+    .avring {
+      width: 44px; height: 44px; border-radius: 50%;
+      overflow: hidden; border: 2px solid #e8ddd0;
+      margin: 0 auto 4px;
+    }
     .avring img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
-    .avn { font-size: 10px; font-weight: 700; color: #3d2f22; }
-    .avs { font-size: 8px; color: #a09080; line-height: 1.3; max-width: 56px; }
+    .avn { font-size: 10.5px; font-weight: 700; color: #3d2f22; }
+    .avs { font-size: 9px; color: #a09080; line-height: 1.3; max-width: 58px; }
 
     /* Feature list */
     .feat-list { margin: 5px 0; display: flex; flex-direction: column; gap: 5px; }
-    .feat-row { display: flex; align-items: center; gap: 7px; }
-    .feat-ico { font-size: 13px; width: 20px; text-align: center; flex-shrink: 0; }
-    .feat-arr { font-size: 11px; color: #d4a96a; flex-shrink: 0; font-weight: 700; }
-    .feat-tx { font-size: 10.5px; color: #6b5a4e; }
+    .feat-row { display: flex; align-items: center; gap: 8px; }
+    .feat-ico { font-size: 14px; width: 22px; text-align: center; flex-shrink: 0; }
+    .feat-arr { font-size: 12px; color: #d4a96a; flex-shrink: 0; font-weight: 700; }
+    .feat-tx { font-size: 11px; color: #6b5a4e; }
 
-    /* Hint bubble */
-    .hint-bubble {
-      position: absolute; bottom: 78px; left: 50%; transform: translateX(-50%);
-      background: rgba(255,253,249,0.96); border: 1px solid #e8ddd0;
-      border-radius: 15px; padding: 11px 15px; text-align: center;
-      z-index: 20; font-family: 'Nunito', sans-serif; width: 210px;
-      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    /* Share pill */
+    .sh-pill {
+      display: flex; align-items: center; gap: 8px;
+      background: #f5f0eb; border-radius: 10px;
+      padding: 7px 10px; margin: 7px 0;
     }
+    .sh-ic {
+      width: 26px; height: 26px; background: #5a7a62;
+      border-radius: 7px; display: flex; align-items: center;
+      justify-content: center; color: #fff; font-size: 13px; flex-shrink: 0;
+    }
+    .sh-tx { font-size: 10.5px; color: #5a4a3e; line-height: 1.45; }
 
-    /* Replay */
-    .replay-wrap { text-align: center; margin-top: 12px; }
-    .btn-replay { background: #fff; border: 1px solid #e0d8cf; border-radius: 20px; padding: 7px 20px; font-size: 11.5px; font-weight: 700; color: #7a6a5e; cursor: pointer; font-family: 'Nunito', sans-serif; transition: background .2s; }
-    .btn-replay:hover { background: #f5f0eb; }
+    /* Lang + replay bar */
+    #controls {
+      position: fixed; bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 8px; z-index: 25;
+    }
+    .ctrl-btn {
+      padding: 6px 16px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      border: 1px solid #ddd; color: #a09080; background: rgba(255,253,249,0.95);
+      font-family: 'Nunito', sans-serif;
+      backdrop-filter: blur(4px);
+    }
+    .ctrl-btn.on { background: #5a7a62; color: #fff; border-color: #5a7a62; }
+    .ctrl-btn.replay { color: #7a6a5e; }
 
-    footer { margin-top: 28px; font-size: 10.5px; color: #b0a090; text-align: center; }
+    /* Iframe blocked fallback */
+    #blocked-msg {
+      position: fixed; inset: 0; z-index: 5;
+      display: none; align-items: center; justify-content: center;
+      background: #faf7f2; flex-direction: column; gap: 16px;
+      text-align: center; padding: 32px;
+    }
+    #blocked-msg h2 { font-size: 18px; font-weight: 800; color: #3d2f22; }
+    #blocked-msg p { font-size: 13px; color: #6b5a4e; line-height: 1.6; max-width: 320px; }
+    #blocked-msg a {
+      display: inline-block; background: #5a7a62; color: #fff;
+      border-radius: 20px; padding: 10px 24px;
+      font-size: 13px; font-weight: 700; text-decoration: none;
+    }
   </style>
 </head>
 <body>
 
-  <div class="logo">ECET</div>
-  <h1 id="page-title">App Tutorial Preview</h1>
+  <!-- Real app -->
+  <iframe
+    id="app-frame"
+    src="https://ask-ecet.lovable.app/home"
+    title="Ask ECET"
+    allow="fullscreen"
+    onload="onFrameLoad()"
+    onerror="showBlocked()"
+  ></iframe>
 
-  <div class="lang-bar">
-    <button class="lbtn on" onclick="setLang('en',this)">English</button>
-    <button class="lbtn" onclick="setLang('zh',this)">中文</button>
-  </div>
-  <div class="page-tabs">
-    <div class="ptab on" id="ptab-home" onclick="switchPage('home',this)">🏠 Home</div>
-    <div class="ptab" id="ptab-comm" onclick="switchPage('community',this)">👥 Community</div>
-  </div>
-
-  <div class="phone" id="phone">
-
-    <!-- ── HOME PAGE ── -->
-    <div class="page on" id="pg-home">
-      <div class="screen">
-        <div class="topbar">
-          <div class="avsm"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e8ddd4'/%3E%3Ccircle cx='20' cy='15' r='8' fill='%23c4a882'/%3E%3Cellipse cx='20' cy='35' rx='13' ry='10' fill='%23c4a882'/%3E%3C/svg%3E" alt="avatar"></div>
-          <div class="gr"><h2 id="tx-hey">Hey, Sarah 👋</h2><p id="tx-wb">Welcome back</p></div>
-          <div class="lo">↪</div>
-        </div>
-
-        <div class="jcard">
-          <h3 id="tx-lj">Learning Journey</h3>
-          <p id="tx-ac">15 activities completed</p>
-          <div class="pbar"><div class="pfill"></div></div>
-          <div class="stats">
-            <div class="stat"><div class="sico sg">🎓</div><div class="snum ng">6</div><div class="slbl" id="tx-s1">Guide chats<br>completed</div></div>
-            <div class="stat"><div class="sico sr">♥</div><div class="snum nr">7</div><div class="slbl" id="tx-s2">Posts shared<br>community</div></div>
-            <div class="stat"><div class="sico sa">⚡</div><div class="snum na">2</div><div class="slbl" id="tx-s3">Days active<br>platform</div></div>
-          </div>
-        </div>
-
-        <div class="stitle" id="tx-tqt">Trending Questions</div>
-        <div class="trow" id="el-tq">
-          <div class="ti"><div class="tring u"><div class="tinner"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 45'%3E%3Ccircle cx='22' cy='22' r='22' fill='%23fde8d8'/%3E%3Ccircle cx='22' cy='17' r='8' fill='%23e8a87c'/%3E%3Cellipse cx='22' cy='39' rx='13' ry='9' fill='%23e8a87c'/%3E%3C/svg%3E" alt=""></div></div><div class="tlbl" id="tx-tq1">my child is slow…</div></div>
-          <div class="ti"><div class="tring u"><div class="tinner"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 45'%3E%3Ccircle cx='22' cy='22' r='22' fill='%23d8e8f8'/%3E%3Ccircle cx='22' cy='17' r='8' fill='%23a87ce8'/%3E%3Cellipse cx='22' cy='39' rx='13' ry='9' fill='%23a87ce8'/%3E%3C/svg%3E" alt=""></div></div><div class="tlbl" id="tx-tq2">How can I modify…</div></div>
-          <div class="ti"><div class="tring u"><div class="tinner"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 45'%3E%3Ccircle cx='22' cy='22' r='22' fill='%23e8f5e8'/%3E%3Ccircle cx='22' cy='17' r='8' fill='%237ccc9a'/%3E%3Cellipse cx='22' cy='39' rx='13' ry='9' fill='%237ccc9a'/%3E%3C/svg%3E" alt=""></div></div><div class="tlbl" id="tx-tq3">frequent meltdowns…</div></div>
-          <div class="ti"><div class="tring s"><div class="tinner"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 45'%3E%3Ccircle cx='22' cy='22' r='22' fill='%23f5f0e8'/%3E%3Ccircle cx='22' cy='17' r='8' fill='%23e8c87c'/%3E%3Cellipse cx='22' cy='39' rx='13' ry='9' fill='%23e8c87c'/%3E%3C/svg%3E" alt=""></div></div><div class="tlbl" id="tx-tq4">lesson plan</div></div>
-        </div>
-
-        <div class="stitle" id="tx-wct">What can you do here?</div>
-        <div class="wcard" id="el-ask"><div class="wico wg">💬</div><div><div class="wt" id="tx-askt">Ask ECET Guide</div><div class="wd" id="tx-askd">Get answers about early childhood education.</div></div></div>
-        <div class="wcard" id="el-comm-c"><div class="wico wr">👥</div><div><div class="wt" id="tx-commt">Community Hub</div><div class="wd" id="tx-commd">Share experiences, read stories.</div></div></div>
-        <div class="wcard" id="el-about"><div class="wico wa">ℹ️</div><div><div class="wt" id="tx-aboutt">About ECET</div><div class="wd" id="tx-aboutd">Mission, values, and ECET.</div></div></div>
-      </div>
-      <div class="bnav">
-        <div class="ni on"><div class="nico">🏠</div><span id="n1">Home</span></div>
-        <div class="ni"><div class="nico">👥</div><span id="n2">Community</span></div>
-        <div class="ni"><div class="nico">ℹ️</div><span id="n3">About</span></div>
-        <div class="ni"><div class="nico">⚙️</div><span id="n4">Settings</span></div>
-      </div>
-    </div>
-
-    <!-- ── COMMUNITY PAGE ── -->
-    <div class="page" id="pg-community">
-      <div class="comm-page">
-        <div class="comm-header"><h2 id="tx-ch">Community Hub</h2><p id="tx-chs">A space for educators and families</p></div>
-        <div class="tag-row">
-          <div class="tag on">All</div><div class="tag">Emotions</div><div class="tag">Routines</div><div class="tag">Stress</div><div class="tag">PBS</div>
-        </div>
-        <div class="post-card" id="el-post">
-          <div class="post-top">
-            <div class="post-av"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23e8ddd4'/%3E%3Ccircle cx='16' cy='12' r='6' fill='%23c4a882'/%3E%3Cellipse cx='16' cy='28' rx='10' ry='7' fill='%23c4a882'/%3E%3C/svg%3E" alt=""></div>
-            <div><div class="post-name">Sarah <span style="background:#eaf4ed;color:#4a7a5a;font-size:8px;padding:2px 6px;border-radius:10px;margin-left:3px;font-weight:700">Admin</span></div><div class="post-time">2d ago</div></div>
-          </div>
-          <div class="post-tags"><div class="ptag">inclusion</div><div class="ptag">teaching</div></div>
-          <div class="post-title">💬 lesson plan</div>
-          <div class="post-body" id="tx-pb">Sarah, when designing an inclusive lesson plan, it's helpful to move away from a "one-size-fits-all" approach…</div>
-          <div class="post-actions" id="el-actions">
-            <div class="pact">👍 0</div><div class="pact">❤️ 0</div><div class="pact">😊 0</div><div class="pact">👋 0</div>
-            <div class="pact" style="margin-left:auto">💬 0</div>
-            <div class="pact-save">🔖</div>
-          </div>
-        </div>
-      </div>
-      <div class="bnav">
-        <div class="ni"><div class="nico">🏠</div><span id="cn1">Home</span></div>
-        <div class="ni on"><div class="nico">👥</div><span id="cn2">Community</span></div>
-        <div class="ni"><div class="nico">ℹ️</div><span id="cn3">About</span></div>
-        <div class="ni"><div class="nico">⚙️</div><span id="cn4">Settings</span></div>
-      </div>
-    </div>
-
-    <!-- Spotlight + Tooltip -->
-    <div class="spbox" id="spBox" style="display:none"></div>
-    <div class="tt" id="tt" style="display:none"></div>
+  <!-- Iframe blocked fallback -->
+  <div id="blocked-msg">
+    <h2>âš ï¸ App æ— æ³•ç›´æŽ¥åµŒå…¥</h2>
+    <p>Lovable ç¦æ­¢äº† iframe åµŒå…¥ã€‚è¯·ç›´æŽ¥åœ¨ <b>ask-ecet.lovable.app</b> é‡ŒæŠŠ Tutorial ä»£ç åŠ è¿›åŽ»ã€‚</p>
+    <a href="https://ask-ecet.lovable.app/home" target="_blank">ç›´æŽ¥æ‰“å¼€ App â†’</a>
   </div>
 
-  <div class="replay-wrap">
-    <button class="btn-replay" id="btn-replay" onclick="replayAll()">↩ Replay tutorial</button>
+  <!-- Overlay + Spotlight + Tooltip -->
+  <div id="overlay"></div>
+  <div id="spotlight"></div>
+  <div id="tooltip"></div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button class="ctrl-btn on" onclick="setLang('en',this)">English</button>
+    <button class="ctrl-btn" onclick="setLang('zh',this)">ä¸­æ–‡</button>
+    <button class="ctrl-btn replay" id="btn-replay" onclick="replayAll()">â†© Replay</button>
   </div>
 
-  <footer>ECET – Every Child • Every Teacher &nbsp;·&nbsp; Tutorial prototype</footer>
+<script>
+  let LANG = 'en';
 
-  <script>
-    let LANG = 'en';
-
-    const TX = {
-      en: {
-        step: 'STEP', of: 'OF', skip: 'Skip',
-        pageTitle: 'App Tutorial Preview',
-        s: [
-          { title: 'Welcome to Ask ECET 🌱', body: 'Your go-to space for early childhood support — ask an AI guide, share what helps, and connect with a community that truly gets it.', btn: "Let's start →", id: null, pos: { top: '148px', left: '50%', transform: 'translateX(-50%)' }, arrow: null },
-          { title: 'Trending Questions', body: 'Browse the latest questions from the community — tap any avatar to read in full.', btn: 'Next →', id: 'el-tq', pos: { top: '270px', left: '10px' }, arrow: 'up' },
-          { title: 'Ask ECET Guide', body: 'Choose from 3 AI companions, each with a different focus:', btn: 'Next →', id: 'el-ask', pos: { top: '398px', left: '10px' }, arrow: 'up', avs: true },
-          { title: 'About ECET 📖', body: 'Mission, VALUED framework & community links — Facebook, Instagram, Circle.', btn: 'Done ✓', id: 'el-about', pos: { top: '300px', left: '10px' }, arrow: 'down', dynamicAbove: true },
-        ],
-        hint: 'Switch to Community page to continue →', hintBtn: 'Go to Community 👥',
-        s5: { title: 'Community Hub 🌟', body: 'Share experiences, support each other, and read what others have posted.', btn: 'Next →', id: 'el-post', pos: { top: '58px', left: '10px' }, arrow: null },
-        s6: { title: 'Features', rows: [['👍', '←', 'Like · Heart · React'], ['💬', '←', 'Comment · Support'], ['🔖', '←', 'Save posts'], ['🏷️', '↑', 'Search by tag above']], btn: 'Got it 🌱', id: 'el-actions', pos: { bottom: '78px', left: '10px' }, arrow: 'down' },
-        replay: '↩ Replay tutorial',
-        avNames: ['Hannah', 'Leo', 'Mia'],
-        avSpec: ['Emotions &amp; Behaviour', 'Learning &amp; Curriculum', 'Family &amp; Parenting'],
-        ui: {
-          hey: 'Hey, Sarah 👋', wb: 'Welcome back', lj: 'Learning Journey', ac: '15 activities completed',
-          s1: 'Guide chats<br>completed', s2: 'Posts shared<br>community', s3: 'Days active<br>platform',
-          tqt: 'Trending Questions', wct: 'What can you do here?',
-          tq1: 'my child is slow…', tq2: 'How can I modify…', tq3: 'frequent meltdowns…', tq4: 'lesson plan',
-          askt: 'Ask ECET Guide', askd: 'Get answers about early childhood education.',
-          commt: 'Community Hub', commd: 'Share experiences, read stories.',
-          aboutt: 'About ECET', aboutd: 'Mission, values, and ECET.',
-          n: ['Home', 'Community', 'About', 'Settings'],
-          ch: 'Community Hub', chs: 'A space for educators and families',
-          pb: 'Sarah, when designing an inclusive lesson plan, it\'s helpful to move away from a "one-size-fits-all" approach…',
-          pt: ['🏠 Home', '👥 Community'],
+  // â”€â”€ Translations â”€â”€
+  const TX = {
+    en: {
+      step: 'STEP', of: 'OF', skip: 'Skip', replay: 'â†© Replay tutorial',
+      avNames: ['Hannah', 'Leo', 'Mia'],
+      avSpec: ['Emotions &amp; Behaviour', 'Learning &amp; Curriculum', 'Family &amp; Parenting'],
+      steps: [
+        {
+          title: 'Welcome to Ask ECET ðŸŒ±',
+          body: 'Your go-to space for early childhood support â€” ask an AI guide, share what helps, and connect with a community that truly gets it.',
+          btn: "Let's start â†’",
+          spotlight: null,
+          pos: 'center',
+          arrow: null
         },
-      },
-      zh: {
-        step: '步骤', of: '/', skip: '跳过',
-        pageTitle: 'App Tutorial 预览',
-        s: [
-          { title: '欢迎来到 Ask ECET 🌱', body: '专为幼儿教育工作者与家长打造 — 向 AI 提问、分享心得，与社群互相支持。', btn: '开始 →', id: null, pos: { top: '148px', left: '50%', transform: 'translateX(-50%)' }, arrow: null },
-          { title: '最新提问', body: '浏览社群的最新提问 — 轻触任何头像即可阅读全文。', btn: '下一步 →', id: 'el-tq', pos: { top: '270px', left: '10px' }, arrow: 'up' },
-          { title: 'Ask ECET Guide', body: '选择 3 位 AI 伴侣，各有不同专长：', btn: '下一步 →', id: 'el-ask', pos: { top: '398px', left: '10px' }, arrow: 'up', avs: true },
-          { title: '关于 ECET 📖', body: 'VALUED 理念 &amp; 社群连结 — Facebook、Instagram、Circle。', btn: '完成 ✓', id: 'el-about', pos: { top: '300px', left: '10px' }, arrow: 'down', dynamicAbove: true },
-        ],
-        hint: '前往 Community 页面继续 →', hintBtn: '前往社群 👥',
-        s5: { title: 'Community Hub 🌟', body: '分享经验、互相支持，浏览他人分享的贴文。', btn: '下一步 →', id: 'el-post', pos: { top: '58px', left: '10px' }, arrow: null },
-        s6: { title: '互动功能', rows: [['👍', '←', '按赞 · 爱心 · 表情'], ['💬', '←', '留言 · 互相支持'], ['🔖', '←', '收藏贴文'], ['🏷️', '↑', '上方 tag 搜寻']], btn: '了解 🌱', id: 'el-actions', pos: { bottom: '78px', left: '10px' }, arrow: 'down' },
-        replay: '↩ 重看 Tutorial',
-        avNames: ['Hannah', 'Leo', 'Mia'],
-        avSpec: ['情绪与行为', '学习与课程', '家庭与育儿'],
-        ui: {
-          hey: '嗨，Sarah 👋', wb: '欢迎回来', lj: '学习进度', ac: '已完成 15 项活动',
-          s1: 'AI 对话<br>次数', s2: '分享到<br>社群', s3: '活跃<br>天数',
-          tqt: '最新提问', wct: '你可以在这里做什么？',
-          tq1: '我的孩子阅读…', tq2: '如何调整…', tq3: '经常崩溃…', tq4: '教案设计',
-          askt: 'Ask ECET Guide', askd: '随时获得幼儿教育问题的解答。',
-          commt: 'Community Hub', commd: '分享经验，阅读他人的故事。',
-          aboutt: '关于 ECET', aboutd: '使命、价值观与理念。',
-          n: ['首页', '社群', '关于', '设置'],
-          ch: 'Community Hub', chs: '教育工作者与家庭的交流空间',
-          pb: 'Sarah，设计包容性教案时，建议提供多种学习途径…',
-          pt: ['🏠 首页', '👥 社群'],
+        {
+          title: 'Trending Questions',
+          body: 'Browse the latest questions from the community â€” tap any avatar to read in full.',
+          btn: 'Next â†’',
+          spotlight: 'trending',
+          pos: 'below-trending',
+          arrow: 'up'
         },
-      },
-    };
+        {
+          title: 'Ask ECET Guide',
+          body: 'Choose from 3 AI companions, each with a different focus:',
+          btn: 'Next â†’',
+          spotlight: 'ask-card',
+          pos: 'below-ask',
+          arrow: 'up',
+          avs: true
+        },
+        {
+          title: 'Ask & Share ðŸ’¬',
+          body: 'Type your question and get an instant AI response. Found something helpful? Tap the <b>â†— share icon</b> at the top-right of the chat screen to post it to the Community.<div class="sh-pill"><div class="sh-ic">â†—</div><div class="sh-tx"><b>Share to Community</b><br>Choose full chat or specific messages â€” post anonymously if you prefer</div></div>',
+          btn: 'Next â†’',
+          spotlight: 'ask-card',
+          pos: 'below-ask',
+          arrow: 'up'
+        },
+        {
+          title: 'About ECET ðŸ“–',
+          body: 'Mission, VALUED framework &amp; community links â€” Facebook, Instagram, Circle.',
+          btn: 'Done âœ“',
+          spotlight: 'about-card',
+          pos: 'above-about',
+          arrow: 'down'
+        },
+      ],
+      commSteps: [
+        {
+          title: 'Community Hub ðŸŒŸ',
+          body: 'Share experiences, support each other, and read what others have posted.',
+          btn: 'Next â†’',
+          spotlight: 'post',
+          pos: 'below-post',
+          arrow: null
+        },
+        {
+          title: 'Features',
+          body: `<div class='feat-list'>
+            <div class='feat-row'><span class='feat-ico'>ðŸ‘</span><span class='feat-arr'>â†</span><span class='feat-tx'>Like Â· Heart Â· React</span></div>
+            <div class='feat-row'><span class='feat-ico'>ðŸ’¬</span><span class='feat-arr'>â†</span><span class='feat-tx'>Comment Â· Support others</span></div>
+            <div class='feat-row'><span class='feat-ico'>ðŸ”–</span><span class='feat-arr'>â†</span><span class='feat-tx'>Save posts</span></div>
+            <div class='feat-row'><span class='feat-ico'>ðŸ·ï¸</span><span class='feat-arr'>â†‘</span><span class='feat-tx'>Search by tag above</span></div>
+          </div>`,
+          btn: 'Got it ðŸŒ±',
+          spotlight: 'actions',
+          pos: 'above-actions',
+          arrow: 'down'
+        }
+      ]
+    },
+    zh: {
+      step: 'æ­¥éª¤', of: '/', skip: 'è·³è¿‡', replay: 'â†© é‡çœ‹ Tutorial',
+      avNames: ['Hannah', 'Leo', 'Mia'],
+      avSpec: ['æƒ…ç»ªä¸Žè¡Œä¸º', 'å­¦ä¹ ä¸Žè¯¾ç¨‹', 'å®¶åº­ä¸Žè‚²å„¿'],
+      steps: [
+        {
+          title: 'æ¬¢è¿Žæ¥åˆ° Ask ECET ðŸŒ±',
+          body: 'ä¸“ä¸ºå¹¼å„¿æ•™è‚²å·¥ä½œè€…ä¸Žå®¶é•¿æ‰“é€  â€” å‘ AI æé—®ã€åˆ†äº«å¿ƒå¾—ï¼Œä¸Žç¤¾ç¾¤äº’ç›¸æ”¯æŒã€‚',
+          btn: 'å¼€å§‹ â†’',
+          spotlight: null, pos: 'center', arrow: null
+        },
+        {
+          title: 'æœ€æ–°æé—®',
+          body: 'æµè§ˆç¤¾ç¾¤çš„æœ€æ–°æé—® â€” è½»è§¦ä»»ä½•å¤´åƒå³å¯é˜…è¯»å…¨æ–‡ã€‚',
+          btn: 'ä¸‹ä¸€æ­¥ â†’',
+          spotlight: 'trending', pos: 'below-trending', arrow: 'up'
+        },
+        {
+          title: 'Ask ECET Guide',
+          body: 'é€‰æ‹© 3 ä½ AI ä¼´ä¾£ï¼Œå„æœ‰ä¸åŒä¸“é•¿ï¼š',
+          btn: 'ä¸‹ä¸€æ­¥ â†’',
+          spotlight: 'ask-card', pos: 'below-ask', arrow: 'up', avs: true
+        },
+        {
+          title: 'æé—®ä¸Žåˆ†äº« ðŸ’¬',
+          body: 'å‘ AI æé—®ï¼ŒèŽ·å¾—å³æ—¶å›žå¤ã€‚è§‰å¾—æœ‰å¸®åŠ©ï¼Ÿç‚¹å‡»å¯¹è¯ç”»é¢å³ä¸Šè§’çš„ <b>â†— åˆ†äº«å›¾æ ‡</b>ï¼Œå‘å¸ƒåˆ°ç¤¾ç¾¤ã€‚<div class="sh-pill"><div class="sh-ic">â†—</div><div class="sh-tx"><b>åˆ†äº«åˆ°ç¤¾ç¾¤</b><br>é€‰æ‹©æ•´æ®µå¯¹è¯æˆ–ç‰¹å®šè®¯æ¯ï¼Œæ”¯æŒåŒ¿ååˆ†äº«</div></div>',
+          btn: 'ä¸‹ä¸€æ­¥ â†’',
+          spotlight: 'ask-card', pos: 'below-ask', arrow: 'up'
+        },
+        {
+          title: 'å…³äºŽ ECET ðŸ“–',
+          body: 'VALUED ç†å¿µ &amp; ç¤¾ç¾¤è¿žç»“ â€” Facebookã€Instagramã€Circleã€‚',
+          btn: 'å®Œæˆ âœ“',
+          spotlight: 'about-card', pos: 'above-about', arrow: 'down'
+        },
+      ],
+      commSteps: [
+        {
+          title: 'Community Hub ðŸŒŸ',
+          body: 'åˆ†äº«ç»éªŒã€äº’ç›¸æ”¯æŒï¼Œæµè§ˆä»–äººåˆ†äº«çš„è´´æ–‡ã€‚',
+          btn: 'ä¸‹ä¸€æ­¥ â†’',
+          spotlight: 'post', pos: 'below-post', arrow: null
+        },
+        {
+          title: 'äº’åŠ¨åŠŸèƒ½',
+          body: `<div class='feat-list'>
+            <div class='feat-row'><span class='feat-ico'>ðŸ‘</span><span class='feat-arr'>â†</span><span class='feat-tx'>æŒ‰èµž Â· çˆ±å¿ƒ Â· è¡¨æƒ…å›žåº”</span></div>
+            <div class='feat-row'><span class='feat-ico'>ðŸ’¬</span><span class='feat-arr'>â†</span><span class='feat-tx'>ç•™è¨€ Â· äº’ç›¸æ”¯æŒ</span></div>
+            <div class='feat-row'><span class='feat-ico'>ðŸ”–</span><span class='feat-arr'>â†</span><span class='feat-tx'>æ”¶è—è´´æ–‡</span></div>
+            <div class='feat-row'><span class='feat-ico'>ðŸ·ï¸</span><span class='feat-arr'>â†‘</span><span class='feat-tx'>ä¸Šæ–¹ tag æœå¯»ä¸»é¢˜</span></div>
+          </div>`,
+          btn: 'äº†è§£ ðŸŒ±',
+          spotlight: 'actions', pos: 'above-actions', arrow: 'down'
+        }
+      ]
+    }
+  };
 
-    function L() { return TX[LANG]; }
+  function L() { return TX[LANG]; }
 
-    function applyUI() {
-      const u = L().ui;
-      const s = (id, v) => { const e = document.getElementById(id); if (e) e.innerHTML = v; };
-      s('tx-hey', u.hey); s('tx-wb', u.wb); s('tx-lj', u.lj); s('tx-ac', u.ac);
-      s('tx-s1', u.s1); s('tx-s2', u.s2); s('tx-s3', u.s3);
-      s('tx-tqt', u.tqt); s('tx-wct', u.wct);
-      s('tx-tq1', u.tq1); s('tx-tq2', u.tq2); s('tx-tq3', u.tq3); s('tx-tq4', u.tq4);
-      s('tx-askt', u.askt); s('tx-askd', u.askd);
-      s('tx-commt', u.commt); s('tx-commd', u.commd);
-      s('tx-aboutt', u.aboutt); s('tx-aboutd', u.aboutd);
-      s('tx-ch', u.ch); s('tx-chs', u.chs); s('tx-pb', u.pb);
-      ['n1','n2','n3','n4'].forEach((id, i) => s(id, u.n[i]));
-      ['cn1','cn2','cn3','cn4'].forEach((id, i) => s(id, u.n[i]));
-      s('btn-replay', L().replay);
-      s('page-title', L().pageTitle);
-      document.querySelectorAll('.ptab')[0].textContent = u.pt[0];
-      document.querySelectorAll('.ptab')[1].textContent = u.pt[1];
+  let curStep = 0;
+  let frameBlocked = false;
+
+  // Approximate positions of elements in the real app
+  // These are percentage-based estimates â€” adjust if needed
+  const POSITIONS = {
+    'trending':    { top: '22%', left: '5%',  width: '90%', height: '14%' },
+    'ask-card':    { top: '58%', left: '5%',  width: '90%', height: '9%'  },
+    'about-card':  { top: '78%', left: '5%',  width: '90%', height: '9%'  },
+    'post':        { top: '18%', left: '5%',  width: '90%', height: '40%' },
+    'actions':     { top: '54%', left: '5%',  width: '90%', height: '8%'  },
+  };
+
+  function vw() { return window.innerWidth; }
+  function vh() { return window.innerHeight; }
+
+  function pxFromPct(pct, total) {
+    return parseFloat(pct) / 100 * total;
+  }
+
+  function showOverlay(show) {
+    document.getElementById('overlay').style.display = show ? 'block' : 'none';
+  }
+
+  function setSpotlight(key) {
+    const sp = document.getElementById('spotlight');
+    if (!key) { sp.style.display = 'none'; return; }
+    const p = POSITIONS[key];
+    if (!p) { sp.style.display = 'none'; return; }
+    const t = pxFromPct(p.top, vh());
+    const l = pxFromPct(p.left, vw());
+    const w = pxFromPct(p.width, vw());
+    const h = pxFromPct(p.height, vh());
+    sp.style.cssText = `display:block;top:${t}px;left:${l}px;width:${w}px;height:${h}px;border-radius:14px`;
+  }
+
+  function setTooltip(step, stepNum, totalSteps) {
+    const d = L();
+    const tt = document.getElementById('tooltip');
+
+    // Build avatar html if needed
+    let body = step.body;
+    if (step.avs) {
+      const avColors = [['#fde8d8','#e8a87c'],['#d8e8f8','#a87ce8'],['#e8f5e8','#7ccc9a']];
+      const avHtml = `<div class='av3'>${[0,1,2].map(i=>`<div class='avc'><div class='avring'><img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><circle cx='20' cy='20' r='20' fill='${encodeURIComponent(avColors[i][0])}'></circle><circle cx='20' cy='15' r='7' fill='${encodeURIComponent(avColors[i][1])}'></circle><ellipse cx='20' cy='35' rx='12' ry='8' fill='${encodeURIComponent(avColors[i][1])}'></ellipse></svg>" alt="${d.avNames[i]}"></div><div class='avn'>${d.avNames[i]}</div><div class='avs'>${d.avSpec[i]}</div></div>`).join('')}</div>`;
+      body = body + avHtml;
     }
 
-    function setLang(lang, btn) {
-      LANG = lang;
-      document.querySelectorAll('.lbtn').forEach(b => b.classList.remove('on'));
-      btn.classList.add('on');
-      applyUI();
+    // Build dots
+    let dots = '<div class="tt-dots">';
+    for (let j = 0; j < totalSteps; j++) {
+      dots += `<div class="tdot${j === stepNum ? ' on' : ''}"></div>`;
+    }
+    dots += '</div>';
+
+    // Arrow
+    let arrowHtml = '';
+    if (step.arrow === 'up') arrowHtml = '<div class="arr-up"></div>';
+    else if (step.arrow === 'down') arrowHtml = '<div class="arr-down"></div>';
+
+    tt.innerHTML = `${arrowHtml}
+      <div class="tt-tag">${d.step} ${stepNum + 1} ${d.of} ${totalSteps}</div>
+      <div class="tt-title">${step.title}</div>
+      <div class="tt-body">${body}</div>
+      <div class="tt-btns">${dots}
+        <button class="btn-skip" onclick="skipAll()">${d.skip}</button>
+        <button class="btn-next" onclick="nextStep()">${step.btn}</button>
+      </div>`;
+
+    // Position tooltip
+    tt.style.cssText = 'display:block;position:fixed;z-index:20;background:rgba(255,253,249,0.96);border:1px solid #e8ddd0;border-radius:18px;padding:16px 18px 14px;width:280px;font-family:Nunito,sans-serif;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 8px 32px rgba(0,0,0,0.15)';
+
+    const margin = 20;
+    const ttW = 280;
+
+    switch (step.pos) {
+      case 'center':
+        tt.style.top = '50%';
+        tt.style.left = '50%';
+        tt.style.transform = 'translate(-50%, -50%)';
+        break;
+      case 'below-trending': {
+        const p = POSITIONS['trending'];
+        const t = pxFromPct(p.top, vh()) + pxFromPct(p.height, vh()) + 12;
+        tt.style.top = t + 'px';
+        tt.style.left = margin + 'px';
+        tt.style.transform = '';
+        break;
+      }
+      case 'below-ask': {
+        const p = POSITIONS['ask-card'];
+        const t = pxFromPct(p.top, vh()) + pxFromPct(p.height, vh()) + 12;
+        tt.style.top = t + 'px';
+        tt.style.left = margin + 'px';
+        tt.style.transform = '';
+        break;
+      }
+      case 'above-about': {
+        const p = POSITIONS['about-card'];
+        requestAnimationFrame(() => {
+          const h = tt.offsetHeight || 120;
+          tt.style.top = (pxFromPct(p.top, vh()) - h - 14) + 'px';
+          tt.style.left = margin + 'px';
+          tt.style.transform = '';
+        });
+        break;
+      }
+      case 'below-post': {
+        const p = POSITIONS['post'];
+        const t = pxFromPct(p.top, vh()) + pxFromPct(p.height, vh()) + 12;
+        tt.style.top = t + 'px';
+        tt.style.left = margin + 'px';
+        tt.style.transform = '';
+        break;
+      }
+      case 'above-actions': {
+        const p = POSITIONS['actions'];
+        requestAnimationFrame(() => {
+          const h = tt.offsetHeight || 160;
+          tt.style.top = (pxFromPct(p.top, vh()) - h - 14) + 'px';
+          tt.style.left = margin + 'px';
+          tt.style.transform = '';
+        });
+        break;
+      }
+    }
+  }
+
+  const HOME_TOTAL = 5;
+  const COMM_TOTAL = 2;
+  const GRAND_TOTAL = HOME_TOTAL + COMM_TOTAL;
+
+  let phase = 'home'; // 'home' | 'comm'
+
+  function showStep(i) {
+    const d = L();
+    const steps = phase === 'home' ? d.steps : d.commSteps;
+    const globalStep = phase === 'home' ? i : HOME_TOTAL + i;
+    const s = steps[i];
+
+    showOverlay(true);
+    setSpotlight(s.spotlight);
+    setTooltip(s, globalStep, GRAND_TOTAL);
+    curStep = i;
+  }
+
+  function nextStep() {
+    const d = L();
+    const steps = phase === 'home' ? d.steps : d.commSteps;
+    if (curStep >= steps.length - 1) {
+      if (phase === 'home') {
+        // Done with home steps
+        skipAll();
+        showHint();
+      } else {
+        skipAll();
+      }
+      return;
+    }
+    showStep(curStep + 1);
+  }
+
+  function showHint() {
+    const d = L();
+    let h = document.getElementById('hint-bubble');
+    if (!h) {
+      h = document.createElement('div');
+      h.id = 'hint-bubble';
+      h.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(255,253,249,0.97);border:1px solid #e8ddd0;border-radius:16px;padding:12px 18px;text-align:center;z-index:25;font-family:Nunito,sans-serif;width:240px;backdrop-filter:blur(6px);box-shadow:0 4px 20px rgba(0,0,0,.1)';
+      document.body.appendChild(h);
+    }
+    const msg = LANG === 'zh' ? 'å‰å¾€ Community é¡µé¢ç»§ç»­ â†’' : 'Go to Community page to continue â†’';
+    const btnTxt = LANG === 'zh' ? 'å‰å¾€ Community ðŸ‘¥' : 'Go to Community ðŸ‘¥';
+    h.innerHTML = `<div style="font-size:11px;color:#6b5a4e;margin-bottom:8px">${msg}</div>
+      <button onclick="startCommPhase()" style="background:#5a7a62;color:#fff;border:none;border-radius:13px;padding:7px 16px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif">${btnTxt}</button>`;
+  }
+
+  function startCommPhase() {
+    const h = document.getElementById('hint-bubble');
+    if (h) h.remove();
+    phase = 'comm';
+    showStep(0);
+  }
+
+  function skipAll() {
+    showOverlay(false);
+    document.getElementById('spotlight').style.display = 'none';
+    document.getElementById('tooltip').style.display = 'none';
+    const h = document.getElementById('hint-bubble');
+    if (h) h.remove();
+  }
+
+  function setLang(lang, btn) {
+    LANG = lang;
+    document.querySelectorAll('.ctrl-btn:not(.replay)').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('btn-replay').textContent = L().replay;
+    replayAll();
+  }
+
+  function replayAll() {
+    const h = document.getElementById('hint-bubble');
+    if (h) h.remove();
+    phase = 'home';
+    showStep(0);
+  }
+
+  // â”€â”€ Iframe load handling â”€â”€
+  function onFrameLoad() {
+    // Give it a moment then start tutorial
+    setTimeout(() => {
+      replayAll();
+    }, 1200);
+  }
+
+  function showBlocked() {
+    frameBlocked = true;
+    document.getElementById('blocked-msg').style.display = 'flex';
+  }
+
+  // Check if iframe loaded after 5 seconds
+  setTimeout(() => {
+    const frame = document.getElementById('app-frame');
+    try {
+      // If we can access contentDocument, it loaded
+      if (!frame.contentDocument && !frameBlocked) {
+        showBlocked();
+      }
+    } catch(e) {
+      // Cross-origin â€” frame loaded but we can't access DOM (expected)
+      // This is actually fine â€” tutorial still overlays
       replayAll();
     }
+  }, 5000);
 
-    function el(id) { return document.getElementById(id); }
-
-    function getPos(id) {
-      if (!id) return null;
-      const phone = el('phone');
-      const target = el(id);
-      if (!target) return null;
-      const pr = phone.getBoundingClientRect();
-      const er = target.getBoundingClientRect();
-      return { top: er.top - pr.top, left: er.left - pr.left, w: er.width, h: er.height };
-    }
-
-    let curPage = 'home', curStep = 0, homeSteps = [], commSteps = [];
-
-    function buildSteps() {
-      const d = L();
-      const avColors = [['%23fde8d8','%23e8a87c'], ['%23d8e8f8','%23a87ce8'], ['%23e8f5e8','%237ccc9a']];
-      const avHtml = `<div class='av3'>${[0,1,2].map(i => `<div class='avc'><div class='avring'><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='${avColors[i][0]}'/%3E%3Ccircle cx='20' cy='15' r='7' fill='${avColors[i][1]}'/%3E%3Cellipse cx='20' cy='35' rx='12' ry='8' fill='${avColors[i][1]}'/%3E%3C/svg%3E" alt="${d.avNames[i]}"></div><div class='avn'>${d.avNames[i]}</div><div class='avs'>${d.avSpec[i]}</div></div>`).join('')}</div>`;
-
-      homeSteps = d.s.map(step => {
-        if (step.avs) return { ...step, body: step.body + avHtml };
-        return { ...step };
-      });
-
-      commSteps = [
-        { ...d.s5 },
-        {
-          ...d.s6,
-          body: `<div class='feat-list'>${d.s6.rows.map(r => `<div class='feat-row'><span class='feat-ico'>${r[0]}</span><span class='feat-arr'>${r[1]}</span><span class='feat-tx'>${r[2]}</span></div>`).join('')}</div>`
-        }
-      ];
-    }
-
-    function getSteps() { return curPage === 'home' ? homeSteps : commSteps; }
-
-    function showStep(i) {
-      buildSteps();
-      const steps = getSteps();
-      const s = steps[i];
-      const sp = el('spBox'), tt = el('tt'), d = L();
-      const totalGlobal = 6;
-      const globalStep = curPage === 'home' ? i + 1 : 4 + i + 1;
-
-      if (s.id) {
-        const p = getPos(s.id);
-        if (p) sp.style.cssText = `display:block;top:${p.top-4}px;left:${p.left-4}px;width:${p.w+8}px;height:${p.h+8}px;border-radius:13px`;
-      } else {
-        sp.style.display = 'none';
-      }
-
-      let arrowHtml = '';
-      if (s.arrow === 'up') arrowHtml = '<div class="arr-u"></div>';
-      else if (s.arrow === 'down') arrowHtml = '<div class="arr-d"></div>';
-
-      let dots = '<div class="ttdots">';
-      for (let j = 0; j < totalGlobal; j++) {
-        const on = curPage === 'home' ? j === i : j === (4 + i);
-        dots += `<div class="tdot${on ? ' on' : ''}"></div>`;
-      }
-      dots += '</div>';
-
-      tt.innerHTML = `${arrowHtml}<div class="tt-tag">${d.step} ${globalStep} ${d.of} ${totalGlobal}</div><div class="tt-title">${s.title}</div><div class="tt-body">${s.body}</div><div class="tt-btns">${dots}<button class="btn-s" onclick="skipAll()">${d.skip}</button><button class="btn-n" onclick="nextStep()">${s.btn}</button></div>`;
-
-      tt.style.cssText = 'display:block;position:absolute;z-index:20;background:rgba(255,253,249,0.94);border:1px solid #e8ddd0;border-radius:17px;padding:13px 14px 11px;width:228px;font-family:Nunito,sans-serif;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)';
-      Object.keys(s.pos).forEach(k => tt.style[k] = s.pos[k]);
-
-      if (s.dynamicAbove) {
-        const p = getPos(s.id);
-        if (p) {
-          requestAnimationFrame(() => {
-            const h = tt.offsetHeight || 120;
-            tt.style.top = Math.max(8, p.top - h - 14) + 'px';
-            tt.style.left = '10px';
-            tt.style.transform = '';
-          });
-        }
-      }
-
-      curStep = i;
-    }
-
-    function nextStep() {
-      const steps = getSteps();
-      if (curStep >= steps.length - 1) {
-        el('spBox').style.display = 'none';
-        el('tt').style.display = 'none';
-        if (curPage === 'home') showHint();
-        return;
-      }
-      showStep(curStep + 1);
-    }
-
-    function showHint() {
-      const d = L();
-      let h = el('hint-comm');
-      if (!h) {
-        h = document.createElement('div');
-        h.className = 'hint-bubble';
-        h.id = 'hint-comm';
-        el('phone').appendChild(h);
-      }
-      h.innerHTML = `<div style="font-size:10.5px;color:#6b5a4e;margin-bottom:8px">${d.hint}</div><button onclick="switchPageBtn()" style="background:#5a7a62;color:#fff;border:none;border-radius:13px;padding:6px 15px;font-size:11px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif">${d.hintBtn}</button>`;
-    }
-
-    function switchPageBtn() {
-      const h = el('hint-comm');
-      if (h) h.remove();
-      switchPage('community', el('ptab-comm'));
-    }
-
-    function switchPage(p, tabEl) {
-      document.querySelectorAll('.ptab').forEach(t => t.classList.remove('on'));
-      if (tabEl) tabEl.classList.add('on');
-      el('spBox').style.display = 'none';
-      el('tt').style.display = 'none';
-      const h = el('hint-comm');
-      if (h) h.remove();
-      document.querySelectorAll('.page').forEach(pg => pg.classList.remove('on'));
-      if (p === 'home') {
-        el('pg-home').classList.add('on');
-        curPage = 'home'; buildSteps(); showStep(0);
-      } else {
-        el('pg-community').classList.add('on');
-        curPage = 'community'; buildSteps(); showStep(0);
-      }
-    }
-
-    function skipAll() {
-      el('spBox').style.display = 'none';
-      el('tt').style.display = 'none';
-      const h = el('hint-comm');
-      if (h) h.remove();
-    }
-
-    function replayAll() {
-      const h = el('hint-comm');
-      if (h) h.remove();
-      document.querySelectorAll('.ptab').forEach((t, i) => t.classList.toggle('on', i === 0));
-      document.querySelectorAll('.page').forEach(pg => pg.classList.remove('on'));
-      el('pg-home').classList.add('on');
-      curPage = 'home'; buildSteps(); showStep(0);
-    }
-
-    applyUI();
-    replayAll();
-  </script>
+  // Update replay button text
+  document.getElementById('btn-replay').textContent = L().replay;
+</script>
 </body>
 </html>
